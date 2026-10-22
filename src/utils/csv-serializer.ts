@@ -37,15 +37,21 @@ const CSV_SERIALIZATION_ERRORS = {
  * ```
  */
 export function escapeCSVField(value: string | number | bigint): string {
+  // Only strings can carry formula-injection characters.
+  // number/bigint values are safe as-is — plain negatives must remain unchanged.
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(value)) {
+    value = `'${value}`;
+  }
+
   const strValue = String(value);
-  
-  // Check if escaping is needed
+
+  // Check if quoting is needed for CSV special characters
   if (strValue.includes(",") || strValue.includes('"') || strValue.includes("\n")) {
     // Escape internal quotes by doubling them
     const escaped = strValue.replace(/"/g, '""');
     return `"${escaped}"`;
   }
-  
+
   return strValue;
 }
 
